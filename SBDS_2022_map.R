@@ -2,6 +2,13 @@ require(tidyverse)
 require(ggspatial)
 require(sf)
 require(maps)
+library(showtext)
+library(ggtext)
+
+#Adding icons to labels
+# https://stackoverflow.com/questions/71712836/how-to-add-icons-to-ggplot-captions-and-titles
+# https://www.r-bloggers.com/2022/03/how-to-use-fonts-and-icons-in-ggplot/
+font_add(family = "fa-solid", regular = "C:/Users/sbashevkin/Documents/fonts/fontawesome-free-6.1.2-desktop/otfs/Font Awesome 6 Free-solid-900.otf")
 
 bbox<-tibble(x=c(-122.4339, -121.25),
              y=c(37.79301, 38.53464))%>%
@@ -14,7 +21,10 @@ base<-deltamapr::WW_Watershed%>%
 labels<-tibble(label=c("San Francisco Bay", "San Pablo Bay", "Suisun Bay", "Suisun Marsh",
                        "Confluence", "Cache Slough", "Sacramento River", "San Joaquin River", "Napa River",
                        "Sacramento Ship Channel", "Cosumnes\nRiver", "Mokelumne River",
-                       "Frank's Tract", "Twitchell Island", "WWTP", "Discovery Bay", "Stockton", "SWP intake", "CVP intake"),
+                       "Frank's Tract", "Twitchell Island", "WWTP  <span style='font-family:fa-solid'>&#xe006;</span>",
+                       "Discovery Bay", "Stockton <span style='font-family:fa-solid'>&#xf64f;</span>",
+                       "SWP intake <span style='font-family:fa-solid'>&#xe4b6;</span>", "CVP intake <span style='font-family:fa-solid'>&#xe4b6;</span>"),
+               type=c(rep("natural", 14), "human", "natural", rep("human", 3)),
                Latitude=c(37.9, 38.07, 38.08, 38.2, 38.046, 38.24, 38.50000, 37.9, 38.23, 38.51892, 38.35944, 38.2,
                           38.044517, 38.108851, 38.442691, 37.906527, 37.956259, 37.801337, 37.796578),
                Longitude=c(-122.4, -122.4, -122.05, -122.05, -121.9, -121.69, -121.5600, -121.325, -122.3, -121.588, -121.3404, -121.335,
@@ -54,16 +64,16 @@ pout
 p<-ggplot() +
   geom_sf(data=base, fill="slategray3", color="slategray4")+
   geom_segment(data=labels, aes(x=label_X, y=label_Y, xend=X, yend=Y), arrow=arrow(type="closed", length=unit(0.1, "inches")), size=1)+
-  geom_label(data=labels, aes(label=label, x=label_X, y=label_Y))+
+  geom_richtext(data=labels, aes(label=label, x=label_X, y=label_Y, color=type, fill=type), size=12)+
   coord_sf(xlim=c(lims["xmin"], lims["xmax"]), ylim=c(lims["ymin"], lims["ymax"]))+
-  scale_fill_brewer(type="qual", palette="Set1", name="Survey")+
-  scale_shape_manual(values=21:25, name="Survey")+
+  scale_color_manual(values=c("white", "black"))+
+  scale_fill_manual(values=c("gray20", "white"))+
   ylab("")+
   xlab("")+
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "bl", pad_y=unit(0.05, "npc"), which_north = "true")+
   theme_bw()+
-  theme(legend.background = element_rect(color="black"), legend.position=c(0.925,0.85))+
+  theme(legend.position="none")+
   annotation_custom(
     grob = ggplotGrob(pout),
     xmin = -Inf,
@@ -72,5 +82,5 @@ p<-ggplot() +
     ymax = Inf
   )
 
-
 ggsave("SBDS_2022_map.png", plot=p, device="png", width=8, height=8, units = "in")
+
