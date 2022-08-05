@@ -9,6 +9,7 @@ library(ggtext)
 # https://stackoverflow.com/questions/71712836/how-to-add-icons-to-ggplot-captions-and-titles
 # https://www.r-bloggers.com/2022/03/how-to-use-fonts-and-icons-in-ggplot/
 font_add(family = "fa-solid", regular = "C:/Users/sbashevkin/Documents/fonts/fontawesome-free-6.1.2-desktop/otfs/Font Awesome 6 Free-solid-900.otf")
+showtext_auto()
 
 bbox<-tibble(x=c(-122.4339, -121.25),
              y=c(37.79301, 38.53464))%>%
@@ -21,10 +22,15 @@ base<-deltamapr::WW_Watershed%>%
 labels<-tibble(label=c("San Francisco Bay", "San Pablo Bay", "Suisun Bay", "Suisun Marsh",
                        "Confluence", "Cache Slough", "Sacramento River", "San Joaquin River", "Napa River",
                        "Sacramento Ship Channel", "Cosumnes\nRiver", "Mokelumne River",
-                       "Frank's Tract", "Twitchell Island", "WWTP  <span style='font-family:fa-solid'>&#xe006;</span>",
-                       "Discovery Bay", "Stockton <span style='font-family:fa-solid'>&#xf64f;</span>",
-                       "SWP intake <span style='font-family:fa-solid'>&#xe4b6;</span>", "CVP intake <span style='font-family:fa-solid'>&#xe4b6;</span>"),
+                       "Frank's Tract", "Twitchell Island", "WWTP",
+                       "Discovery Bay", "Stockton",
+                       "SWP intake", "CVP intake"),
                type=c(rep("natural", 14), "human", "natural", rep("human", 3)),
+               icon=c(rep(NA_character_, 14), "<span style='font-family:fa-solid'>&#xe006;</span>", NA_character_,
+                      "<span style='font-family:fa-solid'>&#xf64f;</span>",
+                      rep("<span style='font-family:fa-solid'>&#xe4b6;</span>", 2)),
+               arrow_nudge_x=c(rep(0, 14), 1500, 0, 0, -1500, -1500),
+               arrow_nudge_y=c(rep(0, 14), 0, 0, 1500, 0, -1000),
                Latitude=c(37.9, 38.07, 38.08, 38.2, 38.046, 38.24, 38.50000, 37.9, 38.23, 38.51892, 38.35944, 38.2,
                           38.044517, 38.108851, 38.442691, 37.906527, 37.956259, 37.801337, 37.796578),
                Longitude=c(-122.4, -122.4, -122.05, -122.05, -121.9, -121.69, -121.5600, -121.325, -122.3, -121.588, -121.3404, -121.335,
@@ -63,8 +69,9 @@ pout
 
 p<-ggplot() +
   geom_sf(data=base, fill="slategray3", color="slategray4")+
-  geom_segment(data=labels, aes(x=label_X, y=label_Y, xend=X, yend=Y), arrow=arrow(type="closed", length=unit(0.1, "inches")), size=1)+
+  geom_segment(data=labels, aes(x=label_X, y=label_Y, xend=X+arrow_nudge_x, yend=Y+arrow_nudge_y), arrow=arrow(type="closed", length=unit(0.1, "inches")), size=1)+
   geom_richtext(data=labels, aes(label=label, x=label_X, y=label_Y, color=type, fill=type), size=12)+
+  geom_richtext(data=filter(labels, !is.na(icon)), aes(label=icon, x=X, y=Y), label.colour = NA, fill = NA, size=12)+
   coord_sf(xlim=c(lims["xmin"], lims["xmax"]), ylim=c(lims["ymin"], lims["ymax"]))+
   scale_color_manual(values=c("white", "black"))+
   scale_fill_manual(values=c("gray20", "white"))+
@@ -73,7 +80,7 @@ p<-ggplot() +
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "bl", pad_y=unit(0.05, "npc"), which_north = "true")+
   theme_bw()+
-  theme(legend.position="none")+
+  theme(legend.position="none", tex=element_text(size=30))+
   annotation_custom(
     grob = ggplotGrob(pout),
     xmin = -Inf,
