@@ -39,3 +39,5 @@ vignettes/*.pdf
 .Renviron
 
 Delta_Yolo_water_temp_mean.csv
+
+*.tiff

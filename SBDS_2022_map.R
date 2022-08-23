@@ -64,7 +64,7 @@ pout<-ggplot(states)+
             fill = NA, colour = "black", size = 0.7)+
   coord_sf(xlim=c(st_bbox(california)["xmin"], st_bbox(california)["xmax"]), ylim=c(st_bbox(california)["ymin"], st_bbox(california)["ymax"]))+
   theme_bw()+
-  theme(panel.background = element_rect(fill = "dodgerblue3"), axis.text.x=element_text(angle=45, hjust=1))
+  theme(panel.background = element_rect(fill = "dodgerblue3"), axis.text=element_blank(), axis.ticks = element_blank())
 pout
 
 p<-ggplot() +
@@ -80,7 +80,7 @@ p<-ggplot() +
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "bl", pad_y=unit(0.05, "npc"), which_north = "true")+
   theme_bw()+
-  theme(legend.position="none", tex=element_text(size=30))+
+  theme(legend.position="none", text=element_text(size=40))+
   annotation_custom(
     grob = ggplotGrob(pout),
     xmin = -Inf,
@@ -89,5 +89,5 @@ p<-ggplot() +
     ymax = Inf
   )
 
-ggsave("SBDS_2022_map.png", plot=p, device="png", width=8, height=8, units = "in")
+ggsave("SBDS_2022_map.tiff", plot=p, device="tiff", width=8, height=8, units = "in", dpi=400)
 
