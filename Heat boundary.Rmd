@@ -1,0 +1,72 @@
+---
+title: "Heat boundary"
+author: "Sam Bashevkin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Packages
+```{r, message=FALSE, warning=FALSE}
+library(sf)
+library(deltamapr)
+library(tigris)
+library(dplyr)
+library(units)
+library(leaflet)
+```
+
+Delta + Suisun
+```{r}
+my_crs<-26910
+delta_suisun<-deltamapr::R_Delta%>%
+  st_union(deltamapr::R_Suisun%>%
+             st_union()%>%
+             st_as_sf())%>%
+  select(geometry)%>%
+  st_transform(crs=my_crs)
+```
+
+
+Metropolitan areas (via Census Designated Places)
+```{r, results='hide'}
+cities <- places(state = "CA", year = 2018, cb = TRUE)%>%
+  filter(NAME %in% c("Sacramento", "West Sacramento", "Stockton"))%>%
+  select(geometry)%>%
+  st_transform(crs=my_crs)
+```
+
+Plotting the Delta+Suisun boundary (red) and the added city boundaries (green) over the Bay-Delta waterways
+
+```{r}
+leaflet()%>%
+  addProviderTiles("OpenStreetMap.Mapnik")%>%
+  addPolygons(data=delta_suisun%>%
+    st_transform(crs=4326), color="red")%>%
+  addPolygons(data=cities%>%
+    st_transform(crs=4326), color="green")
+```
+
+Combined boundary
+```{r}
+bound<-delta_suisun%>%
+  st_union(cities)%>%
+  st_combine()%>%
+  st_buffer(dist=set_units(100, m))%>% # To help dissolve internal boundaries
+  st_boundary()
+
+# Remove holes (https://github.com/r-spatial/sf/issues/609#issuecomment-357426716)
+bound<-st_multipolygon(lapply(bound, function(x) x[1]))%>%
+  st_sfc(crs=26910)
+```
+
+Plot the final boundary
+```{r}
+leaflet()%>%
+  addProviderTiles("OpenStreetMap.Mapnik")%>%
+  addPolygons(data=bound%>%
+    st_transform(crs=4326), color="red")
+```
