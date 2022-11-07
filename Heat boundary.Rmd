@@ -22,12 +22,13 @@ library(leaflet)
 Delta + Suisun
 ```{r}
 my_crs<-26910
-delta_suisun<-deltamapr::R_Delta%>%
-  st_union(deltamapr::R_Suisun%>%
+delta_suisun<-deltamapr::R_Delta%>% # Legal Delta boundary
+  st_union(deltamapr::R_Suisun%>% # Legal Suisun boundary
              st_union()%>%
              st_as_sf())%>%
-  select(geometry)%>%
-  st_transform(crs=my_crs)
+  st_transform(crs=my_crs)%>%
+  st_union(filter(deltamapr::WW_Watershed, HNAME=="SUISUN BAY")[1,])%>% # Rest of Suisun Bay
+  select(geometry)
 ```
 
 
