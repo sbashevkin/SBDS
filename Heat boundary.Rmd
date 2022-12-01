@@ -62,6 +62,8 @@ bound<-delta_suisun%>%
 # Remove holes (https://github.com/r-spatial/sf/issues/609#issuecomment-357426716)
 bound<-st_multipolygon(lapply(bound, function(x) x[1]))%>%
   st_sfc(crs=26910)
+
+st_write(bound, "SBDS heat boundary/SBDS heat boundary.shp", delete_dsn=TRUE)
 ```
 
 Plot the final boundary
